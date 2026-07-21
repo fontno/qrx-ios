@@ -12,7 +12,12 @@ public enum QRSVGExporter {
         var body: [String] = []
 
         if design.background.alpha > 0 {
-            body.append("<rect width=\"\(fmt(metrics.canvasSize.width))\" height=\"\(fmt(metrics.canvasSize.height))\" fill=\"\(design.background.svgHex)\"\(opacity(design.background))/>")
+            // With a frame, round the background to the border's outer edge so
+            // no square corners poke out past the rounded frame.
+            let rx = design.frame != nil
+                ? " rx=\"\(fmt(FrameMetrics.cornerRadius + FrameMetrics.strokeWidth / 2))\""
+                : ""
+            body.append("<rect width=\"\(fmt(metrics.canvasSize.width))\" height=\"\(fmt(metrics.canvasSize.height))\"\(rx) fill=\"\(design.background.svgHex)\"\(opacity(design.background))/>")
         }
 
         if design.frame != nil {

@@ -140,4 +140,31 @@ struct ScannabilityTests {
         #expect(image.size.width == 300)
         #expect(image.size.height > 300)
     }
+
+    /// The background must follow the frame's rounded border — square corners
+    /// poking out past it are a rendering bug.
+    @Test func framedBackgroundHasTransparentCorners() throws {
+        let matrix = try #require(QRMatrix(payload: "corners", correction: .low))
+        var design = QRDesign(background: RGBAColor(red: 1, green: 1, blue: 0))
+        design.frame = QRFrame(color: .black)
+        let image = QRRenderer.render(matrix: matrix, design: design, pixelSize: 400)
+
+        #expect(alpha(of: image, atUnit: 0.002, 0.002) == 0, "corner pixel should be transparent")
+        #expect(alpha(of: image, atUnit: 0.5, 0.5) > 0, "center must be opaque")
+    }
+
+    /// Reads the alpha of the pixel at a fractional position in the image.
+    private func alpha(of image: UIImage, atUnit ux: CGFloat, _ uy: CGFloat) -> UInt8 {
+        guard let cgImage = image.cgImage else { return 255 }
+        let x = Int(CGFloat(cgImage.width - 1) * ux)
+        let y = Int(CGFloat(cgImage.height - 1) * uy)
+        var pixel: [UInt8] = [0, 0, 0, 0]
+        guard let ctx = CGContext(
+            data: &pixel, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return 255 }
+        ctx.draw(cgImage, in: CGRect(x: -CGFloat(x), y: -CGFloat(cgImage.height - 1 - y), width: CGFloat(cgImage.width), height: CGFloat(cgImage.height)))
+        return pixel[3]
+    }
 }

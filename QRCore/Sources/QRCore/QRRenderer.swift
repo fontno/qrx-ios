@@ -20,7 +20,16 @@ public enum QRRenderer {
 
             if design.background.alpha > 0 {
                 ctx.setFillColor(design.background.cgColor)
-                ctx.fill(CGRect(origin: .zero, size: metrics.canvasSize))
+                let canvas = CGRect(origin: .zero, size: metrics.canvasSize)
+                if design.frame != nil {
+                    // Round the background to the frame border's outer edge so
+                    // no square corners poke out past the rounded frame.
+                    let r = FrameMetrics.cornerRadius + FrameMetrics.strokeWidth / 2
+                    ctx.addPath(CGPath(roundedRect: canvas, cornerWidth: r, cornerHeight: r, transform: nil))
+                    ctx.fillPath()
+                } else {
+                    ctx.fill(canvas)
+                }
             }
 
             ctx.saveGState()

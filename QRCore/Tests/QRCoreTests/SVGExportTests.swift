@@ -38,6 +38,14 @@ struct SVGExportTests {
         #expect(!svg.contains("<rect width="))
     }
 
+    @Test func framedBackgroundIsRounded() throws {
+        var design = QRDesign()
+        design.frame = QRFrame()
+        let svg = try makeSVG(design: design)
+        let bgRect = try #require(svg.firstMatch(of: /<rect width="[0-9.]+" height="[0-9.]+"([^\/]*)\//))
+        #expect(bgRect.1.contains("rx="))
+    }
+
     @Test func circleLogoEmitsClipPathAndAspectFill() throws {
         var design = QRDesign()
         design.logo = LogoOptions(imageData: Data([0x89, 0x50]), sizeFraction: 0.2, backing: .circle, knockout: true)
