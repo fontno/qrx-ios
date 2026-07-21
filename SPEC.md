@@ -50,14 +50,25 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
 - "SCAN ME" CTA frame: rounded border + filled banner, custom label text and
   color, auto black/white label contrast; identical in PNG and SVG export
 
+**Widgets & Present mode (Phase 3a — done)**
+- Home Screen widgets (small/medium) rendering a chosen saved code — scannable,
+  always on a white container; user-configurable via AppIntent; pinned codes
+  surface first
+- Lock Screen accessories that quick-launch the code
+- Full-screen **Present mode** (library context menu + `qrx://present/<id>`
+  widget deep links) — hand your phone to a guest
+- SwiftData store in the App Group container (one-time legacy migration);
+  shared `QRXShared` sources compiled into app + widget
+
 ### ❌ Out (explicitly deferred)
 
 | Deferred | Why | Target |
 |---|---|---|
-| iCloud sync of library (CloudKit) | Schema is CloudKit-ready (inline defaults); needs entitlements + signing pass | Phase 3 |
-| Built-in scanner + malicious-URL warning | Separate surface | Phase 3 |
-| Widgets, Share Extension, App Intents, Wallet | Library exists now; pinning next | Phase 3 |
-| PDF export, batch/CSV | Pro-tier features | Phase 3+ |
+| iCloud sync of library (CloudKit) | Schema is CloudKit-ready (inline defaults); needs entitlements + signing pass | Phase 3b |
+| Share Extension ("make a QR from anything I'm sharing") | Next native surface | Phase 3b |
+| Built-in scanner + malicious-URL warning | Separate surface | Phase 3c |
+| App Intents / Shortcuts, Wallet passes | After Share Extension | Phase 3c |
+| PDF export, batch/CSV | Pro-tier features | Phase 4 |
 | Honest dynamic codes + analytics | Needs server; the one justifiable sub | Later |
 
 ## Architecture

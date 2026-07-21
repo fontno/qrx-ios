@@ -25,8 +25,9 @@ final class QRXUITests: XCTestCase {
 
         app.buttons["library.createFirst"].tap()
 
-        // Default URL content renders immediately; the live scan check must pass.
-        XCTAssertTrue(app.staticTexts["Scans"].waitForExistence(timeout: 10))
+        // Default URL content renders immediately; the live scan check must
+        // pass. Generous timeout: CI runners cold-start CoreImage slowly.
+        XCTAssertTrue(app.staticTexts["Scans"].waitForExistence(timeout: 30))
 
         app.buttons["builder.save"].tap()
         let alert = app.alerts["Save Code"]
