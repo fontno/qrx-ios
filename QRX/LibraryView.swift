@@ -1,12 +1,14 @@
 import QRCore
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 struct LibraryView: View {
     @Query(sort: \SavedCode.updatedAt, order: .reverse) private var codes: [SavedCode]
     @Environment(\.modelContext) private var context
     @State private var renameTarget: SavedCode?
     @State private var renameText = ""
+    @State private var presentTarget: SavedCode?
 
     var body: some View {
         NavigationStack {
@@ -35,6 +37,18 @@ struct LibraryView: View {
                             }
                             .contextMenu {
                                 Button {
+                                    presentTarget = code
+                                } label: {
+                                    Label("Present", systemImage: "arrow.up.left.and.arrow.down.right")
+                                }
+                                Button {
+                                    code.pinned.toggle()
+                                    WidgetCenter.shared.reloadAllTimelines()
+                                } label: {
+                                    Label(code.pinned ? "Unpin from Widgets" : "Pin to Widgets",
+                                          systemImage: code.pinned ? "pin.slash" : "pin")
+                                }
+                                Button {
                                     renameTarget = code
                                     renameText = code.name
                                 } label: {
@@ -48,6 +62,7 @@ struct LibraryView: View {
                                 }
                                 Button(role: .destructive) {
                                     context.delete(code)
+                                    WidgetCenter.shared.reloadAllTimelines()
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -57,6 +72,7 @@ struct LibraryView: View {
                             for index in offsets {
                                 context.delete(codes[index])
                             }
+                            WidgetCenter.shared.reloadAllTimelines()
                         }
                     }
                 }
@@ -71,6 +87,17 @@ struct LibraryView: View {
                     }
                     .accessibilityIdentifier("library.add")
                 }
+            }
+            .fullScreenCover(item: $presentTarget) { code in
+                PresentView(code: code)
+            }
+            .onOpenURL { url in
+                // qrx://present/<uuid> — from widget taps.
+                guard url.scheme == "qrx", url.host() == "present",
+                      let id = UUID(uuidString: url.lastPathComponent),
+                      let code = codes.first(where: { $0.id == id })
+                else { return }
+                presentTarget = code
             }
             .alert("Rename Code", isPresented: Binding(
                 get: { renameTarget != nil },
@@ -116,9 +143,16 @@ private struct CodeRow: View {
             )
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(code.name)
-                    .font(.body.weight(.medium))
-                    .lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(code.name)
+                        .font(.body.weight(.medium))
+                        .lineLimit(1)
+                    if code.pinned {
+                        Image(systemName: "pin.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 Text("\(code.typeLabel) · \(code.updatedAt.formatted(date: .abbreviated, time: .omitted))")
                     .font(.caption)
                     .foregroundStyle(.secondary)

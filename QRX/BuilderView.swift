@@ -1,6 +1,7 @@
 import QRCore
 import SwiftData
 import SwiftUI
+import WidgetKit
 
 struct BuilderView: View {
     private let existing: SavedCode?
@@ -76,6 +77,7 @@ struct BuilderView: View {
                 let code = SavedCode(name: saveName.isEmpty ? model.suggestedName : saveName)
                 model.write(to: code)
                 context.insert(code)
+                WidgetCenter.shared.reloadAllTimelines()
                 dismiss()
             }
         } message: {
@@ -86,6 +88,7 @@ struct BuilderView: View {
     private func save() {
         if let existing {
             model.write(to: existing)
+            WidgetCenter.shared.reloadAllTimelines()
             dismiss()
         } else {
             saveName = model.suggestedName

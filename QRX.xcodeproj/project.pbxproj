@@ -9,7 +9,23 @@
 /* Begin PBXBuildFile section */
 		DAB1700000000000000000A1 /* QRCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAB1700000000000000000A2 /* QRCore */; };
 		DAB17000000000000000020C /* QRCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAB17000000000000000020B /* QRCore */; };
+		DAB17000000000000000030D /* QRCore in Frameworks */ = {isa = PBXBuildFile; productRef = DAB17000000000000000030C /* QRCore */; };
+		DAB170000000000000000303 /* QRXWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DAB170000000000000000302 /* QRXWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DAB17000000000000000030E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DAB170000000000000000303 /* QRXWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXContainerItemProxy section */
 		DAB17000000000000000020A /* PBXContainerItemProxy */ = {
@@ -26,12 +42,20 @@
 			remoteGlobalIDString = DAB1700000000000000000C1;
 			remoteInfo = QRX;
 		};
+		DAB17000000000000000030F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DAB1700000000000000000C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DAB170000000000000000301;
+			remoteInfo = QRXWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		DAB1700000000000000000B1 /* QRX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QRX.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAB170000000000000000202 /* QRXTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QRXTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DAB170000000000000000212 /* QRXUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QRXUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DAB170000000000000000302 /* QRXWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QRXWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -41,6 +65,14 @@
 				Info.plist,
 			);
 			target = DAB1700000000000000000C1 /* QRX */;
+		};
+		DAB17000000000000000030B /* Exceptions for "QRXWidgets" folder in "QRXWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+				QRXWidgets.entitlements,
+			);
+			target = DAB170000000000000000301 /* QRXWidgets */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -61,6 +93,19 @@
 		DAB170000000000000000218 /* QRXUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = QRXUITests;
+			sourceTree = "<group>";
+		};
+		DAB17000000000000000030A /* QRXWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DAB17000000000000000030B /* Exceptions for "QRXWidgets" folder in "QRXWidgets" target */,
+			);
+			path = QRXWidgets;
+			sourceTree = "<group>";
+		};
+		DAB170000000000000000311 /* QRXShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QRXShared;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -89,6 +134,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DAB170000000000000000308 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DAB17000000000000000030D /* QRCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -96,6 +149,8 @@
 			isa = PBXGroup;
 			children = (
 				DAB1700000000000000000B3 /* QRX */,
+				DAB170000000000000000311 /* QRXShared */,
+				DAB17000000000000000030A /* QRXWidgets */,
 				DAB170000000000000000208 /* QRXTests */,
 				DAB170000000000000000218 /* QRXUITests */,
 				DAB1700000000000000000C4 /* Products */,
@@ -106,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				DAB1700000000000000000B1 /* QRX.app */,
+				DAB170000000000000000302 /* QRXWidgets.appex */,
 				DAB170000000000000000202 /* QRXTests.xctest */,
 				DAB170000000000000000212 /* QRXUITests.xctest */,
 			);
@@ -122,13 +178,16 @@
 				DAB1700000000000000000C7 /* Sources */,
 				DAB1700000000000000000C2 /* Frameworks */,
 				DAB1700000000000000000C6 /* Resources */,
+				DAB17000000000000000030E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DAB170000000000000000310 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DAB1700000000000000000B3 /* QRX */,
+				DAB170000000000000000311 /* QRXShared */,
 			);
 			name = QRX;
 			packageProductDependencies = (
@@ -160,6 +219,30 @@
 			productName = QRXTests;
 			productReference = DAB170000000000000000202 /* QRXTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DAB170000000000000000301 /* QRXWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DAB170000000000000000306 /* Build configuration list for PBXNativeTarget "QRXWidgets" */;
+			buildPhases = (
+				DAB170000000000000000307 /* Sources */,
+				DAB170000000000000000308 /* Frameworks */,
+				DAB170000000000000000309 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DAB17000000000000000030A /* QRXWidgets */,
+				DAB170000000000000000311 /* QRXShared */,
+			);
+			name = QRXWidgets;
+			packageProductDependencies = (
+				DAB17000000000000000030C /* QRCore */,
+			);
+			productName = QRXWidgets;
+			productReference = DAB170000000000000000302 /* QRXWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		DAB170000000000000000211 /* QRXUITests */ = {
 			isa = PBXNativeTarget;
@@ -222,6 +305,7 @@
 			projectRoot = "";
 			targets = (
 				DAB1700000000000000000C1 /* QRX */,
+				DAB170000000000000000301 /* QRXWidgets */,
 				DAB170000000000000000201 /* QRXTests */,
 				DAB170000000000000000211 /* QRXUITests */,
 			);
@@ -230,6 +314,13 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		DAB1700000000000000000C6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DAB170000000000000000309 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -260,6 +351,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DAB170000000000000000307 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -272,6 +370,11 @@
 			isa = PBXTargetDependency;
 			target = DAB1700000000000000000C1 /* QRX */;
 			targetProxy = DAB17000000000000000021A /* PBXContainerItemProxy */;
+		};
+		DAB170000000000000000310 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DAB170000000000000000301 /* QRXWidgets */;
+			targetProxy = DAB17000000000000000030F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -545,6 +648,62 @@
 			};
 			name = Release;
 		};
+		DAB170000000000000000304 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = QRXWidgets/QRXWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BTCQT86RY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QRXWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QRXWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brianf.QRX.QRXWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DAB170000000000000000305 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = QRXWidgets/QRXWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3BTCQT86RY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = QRXWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = QRXWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.brianf.QRX.QRXWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -584,6 +743,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		DAB170000000000000000306 /* Build configuration list for PBXNativeTarget "QRXWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DAB170000000000000000304 /* Debug */,
+				DAB170000000000000000305 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -599,6 +767,10 @@
 			productName = QRCore;
 		};
 		DAB17000000000000000020B /* QRCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = QRCore;
+		};
+		DAB17000000000000000030C /* QRCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = QRCore;
 		};

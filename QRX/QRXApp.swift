@@ -11,8 +11,7 @@ struct QRXApp: App {
             // deliberately have no in-memory fallback — silently opening a
             // throwaway store would look like data loss to the user.
             let inMemory = CommandLine.arguments.contains("--uitest-inmemory")
-            let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
-            containerResult = .success(try ModelContainer(for: SavedCode.self, configurations: config))
+            containerResult = .success(try SharedStore.makeContainer(inMemory: inMemory, migrateLegacyStore: true))
         } catch {
             containerResult = .failure(error)
         }
