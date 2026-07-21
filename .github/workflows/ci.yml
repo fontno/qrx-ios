@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DESTINATION: platform=iOS Simulator,name=iPhone 17 Pro
+
+jobs:
+  test:
+    # Requires an Xcode 26 image. Adjust the runner label / Xcode path if
+    # GitHub's available macOS images change.
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      # xcodebuild ignores local-package test targets when invoked against the
+      # project, so the QRCore suite runs from the package directory.
+      - name: QRCore engine tests
+        working-directory: QRCore
+        run: |
+          set -o pipefail
+          xcodebuild -scheme QRCore -destination "$DESTINATION" test | tail -50
+
+      - name: App unit + UI tests
+        run: |
+          set -o pipefail
+          xcodebuild -project QRX.xcodeproj -scheme QRX -destination "$DESTINATION" test | tail -50

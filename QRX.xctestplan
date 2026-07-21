@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "6E9C1D2A-4F3B-4B7E-9A1C-2D5E8F0A1B2C",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:QRCore",
+        "identifier" : "QRCoreTests",
+        "name" : "QRCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:QRX.xcodeproj",
+        "identifier" : "DAB170000000000000000201",
+        "name" : "QRXTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:QRX.xcodeproj",
+        "identifier" : "DAB170000000000000000211",
+        "name" : "QRXUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
