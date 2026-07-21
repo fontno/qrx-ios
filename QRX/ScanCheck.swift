@@ -1,6 +1,5 @@
 import CoreImage
 import UIKit
-import Vision
 
 enum ScanState: Equatable {
     case idle
@@ -9,23 +8,19 @@ enum ScanState: Equatable {
     case fails
 }
 
-/// Decodes the rendered image with Vision and confirms the payload round-trips.
+/// Decodes the rendered image and confirms the payload round-trips.
 /// This is the trust feature: never let someone export a code that won't scan.
+///
+/// Deliberately uses CIDetector rather than Vision: Vision's barcode detector
+/// is unavailable on simulators and hangs on virtualized CI runners, while
+/// CIDetector decodes deterministically everywhere. The engine test suite
+/// (QRCoreTests) standardizes on the same decoder.
 enum ScanCheck {
     static func verify(image: UIImage, expectedPayload: String) async -> Bool {
         guard let cgImage = image.cgImage else { return false }
-        var request = DetectBarcodesRequest()
-        request.symbologies = [.qr]
-        do {
-            let observations = try await request.perform(on: cgImage)
-            return observations.contains { $0.payloadString == expectedPayload }
-        } catch {
-            // Vision's barcode detector is unavailable on the simulator;
-            // CIDetector decodes fine everywhere.
-            return await Task.detached {
-                ciDetectorCheck(cgImage: cgImage, expected: expectedPayload)
-            }.value
-        }
+        return await Task.detached(priority: .userInitiated) {
+            ciDetectorCheck(cgImage: cgImage, expected: expectedPayload)
+        }.value
     }
 
     private nonisolated static func ciDetectorCheck(cgImage: CGImage, expected: String) -> Bool {
