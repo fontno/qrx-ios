@@ -3,9 +3,20 @@ import SwiftData
 import SwiftUI
 import WidgetKit
 
+enum BuilderSection: String, CaseIterable, Identifiable {
+    case content = "Content"
+    case shape = "Shape"
+    case colors = "Colors"
+    case frame = "Frame"
+    case logo = "Logo"
+
+    var id: String { rawValue }
+}
+
 struct BuilderView: View {
     private let existing: SavedCode?
     @State private var model: BuilderModel
+    @State private var section: BuilderSection = .content
     @State private var rendered: UIImage?
     @State private var scanState: ScanState = .idle
     @State private var showingSavePrompt = false
@@ -32,10 +43,20 @@ struct BuilderView: View {
         VStack(spacing: 0) {
             preview
                 .padding(.horizontal)
-                .padding(.bottom, 8)
+            sectionChips
             Form {
-                ContentFieldsView(model: model)
-                DesignPanelView(model: model)
+                switch section {
+                case .content:
+                    ContentFieldsView(model: model)
+                case .shape:
+                    ShapeSectionView(model: model)
+                case .colors:
+                    ColorsSectionView(model: model)
+                case .frame:
+                    FrameSectionView(model: model)
+                case .logo:
+                    LogoSectionView(model: model)
+                }
             }
             .scrollDismissesKeyboard(.interactively)
         }
@@ -133,17 +154,13 @@ struct BuilderView: View {
 
     @ViewBuilder
     private var preview: some View {
-        VStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(.background)
-                    .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
+        VStack(spacing: 6) {
+            Group {
                 if let rendered {
                     Image(uiImage: rendered)
                         .resizable()
                         .interpolation(.high)
                         .scaledToFit()
-                        .padding(14)
                         .contentShape(Rectangle())
                         .onTapGesture {
                             showingFullPreview = true
@@ -161,31 +178,70 @@ struct BuilderView: View {
                     }
                 }
             }
-            .frame(height: 260)
+            .frame(maxHeight: 230)
 
             scanBadge
         }
+        .padding(14)
+        .frame(maxWidth: .infinity)
+        .frame(height: 296)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.background)
+                .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
+        )
         .padding(.top, 8)
     }
 
     @ViewBuilder
     private var scanBadge: some View {
-        switch scanState {
-        case .idle:
-            EmptyView()
-        case .checking:
-            Label("Checking…", systemImage: "ellipsis")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-        case .scans:
-            Label("Scans", systemImage: "checkmark.circle.fill")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.green)
-        case .fails:
-            Label("May not scan — reduce logo size or simplify styling", systemImage: "exclamationmark.triangle.fill")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.orange)
+        Group {
+            switch scanState {
+            case .idle:
+                EmptyView()
+            case .checking:
+                pill("Checking…", systemImage: "ellipsis", tint: .secondary)
+            case .scans:
+                pill("Scans reliably", systemImage: "checkmark.circle.fill", tint: .green)
+            case .fails:
+                pill("May not scan — reduce logo size", systemImage: "exclamationmark.triangle.fill", tint: .orange)
+            }
         }
+    }
+
+    private func pill(_ text: String, systemImage: String, tint: Color) -> some View {
+        Label(text, systemImage: systemImage)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(tint)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Capsule().fill(tint.opacity(0.12)))
+    }
+
+    private var sectionChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(BuilderSection.allCases) { candidate in
+                    let isSelected = section == candidate
+                    Button {
+                        section = candidate
+                    } label: {
+                        Text(candidate.rawValue)
+                            .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                            .foregroundStyle(isSelected ? Color(.systemBackground) : .primary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().fill(isSelected ? Color.primary : Color(.secondarySystemGroupedBackground))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("builder.section.\(candidate.rawValue)")
+                }
+            }
+            .padding(.horizontal)
+        }
+        .padding(.vertical, 10)
     }
 
     private func regenerate() async {
