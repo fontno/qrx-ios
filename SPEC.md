@@ -60,12 +60,17 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
 - SwiftData store in the App Group container (one-time legacy migration);
   shared `QRXShared` sources compiled into app + widget
 
+**Share Extension + library UX (Phase 3b — done)**
+- Share a URL/text from any app → instant QR → save into the library
+  (verified by a Safari-driving XCUITest)
+- Library list/grid toggle (persisted); builder: single Share menu (PNG/SVG),
+  Duplicate on saved codes, tap preview for full-screen
+
 ### ❌ Out (explicitly deferred)
 
 | Deferred | Why | Target |
 |---|---|---|
-| iCloud sync of library (CloudKit) | Schema is CloudKit-ready (inline defaults); needs entitlements + signing pass | Phase 3b |
-| Share Extension ("make a QR from anything I'm sharing") | Next native surface | Phase 3b |
+| iCloud sync of library (CloudKit) | Schema is CloudKit-ready (inline defaults); needs entitlements + signing pass | Phase 3c |
 | Built-in scanner + malicious-URL warning | Separate surface | Phase 3c |
 | App Intents / Shortcuts, Wallet passes | After Share Extension | Phase 3c |
 | PDF export, batch/CSV | Pro-tier features | Phase 4 |
