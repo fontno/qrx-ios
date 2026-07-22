@@ -66,6 +66,7 @@ struct ShareView: View {
             }
             .navigationTitle("Save QR Code")
             .navigationBarTitleDisplayMode(.inline)
+            .tint(.primary)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: cancel)

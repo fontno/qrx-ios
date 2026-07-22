@@ -43,12 +43,12 @@ struct ShapeSectionView: View {
                     Button {
                         selection.wrappedValue = item
                     } label: {
-                        swatch(item, isSelected ? Color.accentColor : Color.primary.opacity(0.7))
+                        swatch(item, isSelected ? Color.primary : Color.primary.opacity(0.55))
                             .frame(width: 44, height: 44)
                             .background(
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color(.secondarySystemGroupedBackground))
-                                    .strokeBorder(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 2 : 1)
+                                    .strokeBorder(isSelected ? Color.primary : Color.primary.opacity(0.12), lineWidth: isSelected ? 2 : 1)
                             )
                     }
                     .buttonStyle(.plain)

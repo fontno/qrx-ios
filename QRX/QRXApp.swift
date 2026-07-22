@@ -23,6 +23,8 @@ struct QRXApp: App {
             case .success(let container):
                 LibraryView()
                     .modelContainer(container)
+                    // Monochrome chrome: controls tint black/white, not blue.
+                    .tint(.primary)
             case .failure(let error):
                 ContentUnavailableView {
                     Label("Can't Open Your Library", systemImage: "exclamationmark.triangle")
