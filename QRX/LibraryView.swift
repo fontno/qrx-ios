@@ -32,6 +32,7 @@ struct LibraryView: View {
                 }
             }
             .navigationTitle("QRX")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if !codes.isEmpty {
                     ToolbarItem(placement: .topBarLeading) {
