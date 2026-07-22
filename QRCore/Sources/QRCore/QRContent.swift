@@ -46,8 +46,17 @@ public enum QRPayload {
     }
 
     public static func phone(_ number: String) -> String {
-        let number = number.trimmingCharacters(in: .whitespaces)
-        return number.isEmpty ? "" : "tel:\(number)"
+        let sanitized = sanitizedPhone(number)
+        return sanitized.isEmpty ? "" : "tel:\(sanitized)"
+    }
+
+    /// Display formatting like "(555) 010-0123" must never reach the encoded
+    /// payload: keep digits plus a leading "+" only.
+    public static func sanitizedPhone(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespaces)
+        let digits = trimmed.filter(\.isNumber)
+        guard !digits.isEmpty else { return "" }
+        return (trimmed.hasPrefix("+") ? "+" : "") + digits
     }
 
     public static func contact(name: String, org: String, phone: String, email: String, website: String) -> String {
@@ -55,7 +64,8 @@ public enum QRPayload {
         guard !name.isEmpty else { return "" }
         var lines = ["BEGIN:VCARD", "VERSION:3.0", "FN:\(escapeVCard(name))"]
         if !org.isEmpty { lines.append("ORG:\(escapeVCard(org))") }
-        if !phone.isEmpty { lines.append("TEL:\(phone)") }
+        let tel = sanitizedPhone(phone)
+        if !tel.isEmpty { lines.append("TEL:\(tel)") }
         if !email.isEmpty { lines.append("EMAIL:\(email)") }
         if !website.isEmpty { lines.append("URL:\(escapeVCard(website))") }
         lines.append("END:VCARD")

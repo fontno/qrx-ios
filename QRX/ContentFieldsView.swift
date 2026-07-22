@@ -40,6 +40,12 @@ struct ContentFieldsView: View {
                 TextField("Company (optional)", text: $model.contactOrg)
                 TextField("Phone (optional)", text: $model.contactPhone)
                     .keyboardType(.phonePad)
+                    .onChange(of: model.contactPhone) { _, newValue in
+                        let formatted = PhoneFormatter.format(newValue)
+                        if formatted != newValue {
+                            model.contactPhone = formatted
+                        }
+                    }
                 TextField("Email (optional)", text: $model.contactEmail)
                     .keyboardType(.emailAddress)
                     .textInputAutocapitalization(.never)
@@ -54,6 +60,12 @@ struct ContentFieldsView: View {
             case .phone:
                 TextField("Phone number", text: $model.phoneNumber)
                     .keyboardType(.phonePad)
+                    .onChange(of: model.phoneNumber) { _, newValue in
+                        let formatted = PhoneFormatter.format(newValue)
+                        if formatted != newValue {
+                            model.phoneNumber = formatted
+                        }
+                    }
             }
         }
     }

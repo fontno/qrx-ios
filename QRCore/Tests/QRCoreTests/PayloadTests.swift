@@ -60,9 +60,17 @@ struct PayloadTests {
         #expect(QRPayload.email(to: "hi@example.com", subject: "") == "mailto:hi@example.com")
     }
 
-    @Test func phone() {
-        #expect(QRPayload.phone(" +1 555 0100 ") == "tel:+1 555 0100")
+    @Test func phoneSanitizesFormatting() {
+        #expect(QRPayload.phone(" +1 555 0100 ") == "tel:+15550100")
+        #expect(QRPayload.phone("(555) 010-0123") == "tel:5550100123")
+        #expect(QRPayload.phone("+1 (555) 010-0123") == "tel:+15550100123")
+        #expect(QRPayload.phone("no digits") == "")
         #expect(QRPayload.phone("") == "")
+    }
+
+    @Test func vCardPhoneIsSanitized() {
+        let p = QRPayload.contact(name: "Ada", org: "", phone: "(555) 010-0123", email: "", website: "")
+        #expect(p.contains("TEL:5550100123"))
     }
 
     // MARK: vCard
