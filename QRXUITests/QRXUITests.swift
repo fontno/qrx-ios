@@ -78,9 +78,11 @@ final class QRXUITests: XCTestCase {
         let preview = app.descendants(matching: .any).matching(identifier: "builder.preview").firstMatch
         XCTAssertTrue(preview.waitForExistence(timeout: 10))
         preview.tap()
-        let done = app.buttons["Done"]
-        XCTAssertTrue(done.waitForExistence(timeout: 5))
-        done.tap()
+        XCTAssertTrue(app.buttons["present.share"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["present.download"].exists)
+        let close = app.buttons["present.close"]
+        XCTAssertTrue(close.exists)
+        close.tap()
         XCTAssertTrue(app.buttons["builder.save"].waitForExistence(timeout: 5))
     }
 
