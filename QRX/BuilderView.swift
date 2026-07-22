@@ -9,6 +9,7 @@ struct BuilderView: View {
     @State private var rendered: UIImage?
     @State private var scanState: ScanState = .idle
     @State private var showingSavePrompt = false
+    @State private var showingFullPreview = false
     @State private var saveName = ""
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -50,25 +51,44 @@ struct BuilderView: View {
                         Label("Save", systemImage: "checkmark")
                     }
                     .accessibilityIdentifier("builder.save")
-                    ShareLink(
-                        item: PNGExport(payload: model.payload, design: model.design),
-                        preview: SharePreview("QR Code", image: sharePreviewImage)
-                    ) {
-                        Label("Share PNG", systemImage: "square.and.arrow.up")
+                    Menu {
+                        ShareLink(
+                            item: PNGExport(payload: model.payload, design: model.design),
+                            preview: SharePreview("QR Code", image: sharePreviewImage)
+                        ) {
+                            Label("Share PNG", systemImage: "photo")
+                        }
+                        ShareLink(
+                            item: SVGExport(payload: model.payload, design: model.design),
+                            preview: SharePreview("QR Code (SVG)", image: sharePreviewImage)
+                        ) {
+                            Label("Share SVG (vector)", systemImage: "square.and.arrow.up.on.square")
+                        }
+                    } label: {
+                        Label("Share", systemImage: "square.and.arrow.up")
                     }
-                    .accessibilityIdentifier("builder.sharePNG")
-                    ShareLink(
-                        item: SVGExport(payload: model.payload, design: model.design),
-                        preview: SharePreview("QR Code (SVG)", image: sharePreviewImage)
-                    ) {
-                        Label("Share SVG", systemImage: "square.and.arrow.up.on.square")
+                    .accessibilityIdentifier("builder.shareMenu")
+                    if existing != nil {
+                        Button {
+                            duplicate()
+                        } label: {
+                            Label("Duplicate", systemImage: "doc.on.doc")
+                        }
+                        .accessibilityIdentifier("builder.duplicate")
                     }
-                    .accessibilityIdentifier("builder.shareSVG")
                 }
             }
         }
         .task(id: RenderKey(payload: model.payload, design: model.design)) {
             await regenerate()
+        }
+        .fullScreenCover(isPresented: $showingFullPreview) {
+            PresentView(
+                name: existing?.name ?? model.suggestedName,
+                typeLabel: model.contentType.rawValue,
+                payload: model.payload,
+                design: model.design
+            )
         }
         .alert("Save Code", isPresented: $showingSavePrompt) {
             TextField("Name", text: $saveName)
@@ -83,6 +103,17 @@ struct BuilderView: View {
         } message: {
             Text("Give this code a name for your library.")
         }
+    }
+
+    /// Saves the current builder state as a new library entry, so users can
+    /// riff on an existing code without touching the original.
+    private func duplicate() {
+        guard let existing else { return }
+        let copy = SavedCode(name: existing.name + " Copy")
+        model.write(to: copy)
+        context.insert(copy)
+        WidgetCenter.shared.reloadAllTimelines()
+        dismiss()
     }
 
     private func save() {
@@ -113,6 +144,12 @@ struct BuilderView: View {
                         .interpolation(.high)
                         .scaledToFit()
                         .padding(14)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showingFullPreview = true
+                        }
+                        .accessibilityIdentifier("builder.preview")
+                        .accessibilityAddTraits(.isButton)
                 } else {
                     VStack(spacing: 8) {
                         Image(systemName: "qrcode")
