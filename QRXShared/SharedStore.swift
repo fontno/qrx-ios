@@ -5,6 +5,7 @@ import SwiftData
 /// extension can read saved codes. Both the app and QRXWidgets use this.
 enum SharedStore {
     static let appGroupID = "group.com.brianf.QRX"
+    static let cloudKitContainerID = "iCloud.com.brianf.QRX"
 
     static func storeURL() throws -> URL {
         guard let container = FileManager.default.containerURL(
@@ -16,10 +17,13 @@ enum SharedStore {
     }
 
     /// - Parameters:
-    ///   - inMemory: isolated throwaway store (UI tests).  
+    ///   - inMemory: isolated throwaway store (UI tests).
     ///   - migrateLegacyStore: app-only — one-time copy of the pre-App-Group
     ///     store from Application Support into the group container.
-    static func makeContainer(inMemory: Bool = false, migrateLegacyStore: Bool = false) throws -> ModelContainer {
+    ///   - syncEnabled: app-only — mirrors the store to the private CloudKit
+    ///     database. Extensions read the same file but must NOT run their own
+    ///     mirror: exactly one process syncs.
+    static func makeContainer(inMemory: Bool = false, migrateLegacyStore: Bool = false, syncEnabled: Bool = false) throws -> ModelContainer {
         if inMemory {
             let config = ModelConfiguration(isStoredInMemoryOnly: true)
             return try ModelContainer(for: SavedCode.self, configurations: config)
@@ -28,7 +32,10 @@ enum SharedStore {
         if migrateLegacyStore {
             migrateLegacyStoreIfNeeded(to: url)
         }
-        let config = ModelConfiguration(url: url)
+        let config = ModelConfiguration(
+            url: url,
+            cloudKitDatabase: syncEnabled ? .private(cloudKitContainerID) : .none
+        )
         return try ModelContainer(for: SavedCode.self, configurations: config)
     }
 
