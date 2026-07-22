@@ -16,7 +16,7 @@ enum SharedStore {
     }
 
     /// - Parameters:
-    ///   - inMemory: isolated throwaway store (UI tests).
+    ///   - inMemory: isolated throwaway store (UI tests).  
     ///   - migrateLegacyStore: app-only — one-time copy of the pre-App-Group
     ///     store from Application Support into the group container.
     static func makeContainer(inMemory: Bool = false, migrateLegacyStore: Bool = false) throws -> ModelContainer {
