@@ -5,7 +5,7 @@ struct ContentFieldsView: View {
     @Bindable var model: BuilderModel
 
     var body: some View {
-        Section("Content") {
+        Section {
             Picker("Type", selection: $model.contentType) {
                 ForEach(ContentType.allCases) { type in
                     Label(type.rawValue, systemImage: type.icon).tag(type)

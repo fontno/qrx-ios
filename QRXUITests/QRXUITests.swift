@@ -40,7 +40,7 @@ final class QRXUITests: XCTestCase {
 
         // Default URL content renders immediately; the live scan check must
         // pass. Generous timeout: CI runners cold-start CoreImage slowly.
-        XCTAssertTrue(app.staticTexts["Scans"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.staticTexts["Scans reliably"].waitForExistence(timeout: 30))
 
         saveViaAlert(app)
 
@@ -54,6 +54,26 @@ final class QRXUITests: XCTestCase {
         row.tap()
         XCTAssertTrue(app.buttons["builder.duplicate"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["builder.save"].exists)
+    }
+
+    func testBuilderSectionChipsSwitchPanels() {
+        let app = launchApp()
+        app.buttons["library.createFirst"].tap()
+
+        // Content is the default panel.
+        XCTAssertTrue(app.textFields.firstMatch.waitForExistence(timeout: 5))
+
+        app.buttons["builder.section.Shape"].tap()
+        XCTAssertTrue(app.staticTexts["Modules"].waitForExistence(timeout: 5))
+
+        app.buttons["builder.section.Colors"].tap()
+        XCTAssertTrue(app.switches["Gradient"].firstMatch.waitForExistence(timeout: 5))
+
+        app.buttons["builder.section.Frame"].tap()
+        XCTAssertTrue(app.switches["“Scan me” frame"].firstMatch.waitForExistence(timeout: 5))
+
+        app.buttons["builder.section.Logo"].tap()
+        XCTAssertTrue(app.buttons["Monogram"].waitForExistence(timeout: 5))
     }
 
     func testLibraryTogglesBetweenListAndGrid() {

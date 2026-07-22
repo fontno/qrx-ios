@@ -2,12 +2,13 @@ import PhotosUI
 import QRCore
 import SwiftUI
 
-struct DesignPanelView: View {
+// MARK: - Shape
+
+struct ShapeSectionView: View {
     @Bindable var model: BuilderModel
-    @State private var photoItem: PhotosPickerItem?
 
     var body: some View {
-        Section("Shape") {
+        Section {
             shapeRow(
                 title: "Modules",
                 items: ModuleShape.allCases,
@@ -23,8 +24,48 @@ struct DesignPanelView: View {
                 EyeSwatch(shape: shape, color: color)
             }
         }
+    }
 
-        Section("Colors") {
+    @ViewBuilder
+    private func shapeRow<S: Identifiable & Equatable>(
+        title: String,
+        items: [S],
+        selection: Binding<S>,
+        @ViewBuilder swatch: @escaping (S, Color) -> some View
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            HStack(spacing: 12) {
+                ForEach(items) { item in
+                    let isSelected = selection.wrappedValue == item
+                    Button {
+                        selection.wrappedValue = item
+                    } label: {
+                        swatch(item, isSelected ? Color.accentColor : Color.primary.opacity(0.7))
+                            .frame(width: 44, height: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(.secondarySystemGroupedBackground))
+                                    .strokeBorder(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 2 : 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Colors
+
+struct ColorsSectionView: View {
+    @Bindable var model: BuilderModel
+
+    var body: some View {
+        Section {
             ColorPicker("Foreground", selection: Binding(rgba: foregroundBinding), supportsOpacity: false)
             Toggle("Gradient", isOn: $model.isGradient)
             if model.isGradient {
@@ -41,8 +82,24 @@ struct DesignPanelView: View {
                 ColorPicker("Pupil", selection: Binding(rgba: $model.design.pupilColor, default: model.foregroundColor), supportsOpacity: false)
             }
         }
+    }
 
-        Section("Frame") {
+    private var foregroundBinding: Binding<RGBAColor> {
+        Binding(get: { model.foregroundColor }, set: { model.foregroundColor = $0 })
+    }
+
+    private var secondaryBinding: Binding<RGBAColor> {
+        Binding(get: { model.secondaryColor }, set: { model.secondaryColor = $0 })
+    }
+}
+
+// MARK: - Frame
+
+struct FrameSectionView: View {
+    @Bindable var model: BuilderModel
+
+    var body: some View {
+        Section {
             Toggle("\u{201C}Scan me\u{201D} frame", isOn: $model.hasFrame)
             if model.hasFrame {
                 TextField("Label", text: frameTextBinding)
@@ -50,8 +107,25 @@ struct DesignPanelView: View {
                 ColorPicker("Frame color", selection: Binding(rgba: frameColorBinding), supportsOpacity: false)
             }
         }
+    }
 
-        Section("Brand logo") {
+    private var frameTextBinding: Binding<String> {
+        Binding(get: { model.frameText }, set: { model.frameText = $0 })
+    }
+
+    private var frameColorBinding: Binding<RGBAColor> {
+        Binding(get: { model.frameColor }, set: { model.frameColor = $0 })
+    }
+}
+
+// MARK: - Logo
+
+struct LogoSectionView: View {
+    @Bindable var model: BuilderModel
+    @State private var photoItem: PhotosPickerItem?
+
+    var body: some View {
+        Section {
             Picker("Logo", selection: $model.logoSource) {
                 ForEach(LogoSource.allCases) { source in
                     Text(source.rawValue).tag(source)
@@ -122,22 +196,6 @@ struct DesignPanelView: View {
         .onChange(of: model.logoKnockout) { model.syncLogo() }
     }
 
-    private var foregroundBinding: Binding<RGBAColor> {
-        Binding(get: { model.foregroundColor }, set: { model.foregroundColor = $0 })
-    }
-
-    private var secondaryBinding: Binding<RGBAColor> {
-        Binding(get: { model.secondaryColor }, set: { model.secondaryColor = $0 })
-    }
-
-    private var frameTextBinding: Binding<String> {
-        Binding(get: { model.frameText }, set: { model.frameText = $0 })
-    }
-
-    private var frameColorBinding: Binding<RGBAColor> {
-        Binding(get: { model.frameColor }, set: { model.frameColor = $0 })
-    }
-
     /// Keeps embedded logos small: PhotosPicker can hand back multi-MB images.
     private static func downscaled(_ data: Data, maxSide: CGFloat = 600) -> Data {
         guard let image = UIImage(data: data) else { return data }
@@ -152,39 +210,9 @@ struct DesignPanelView: View {
         }
         return resized.pngData() ?? data
     }
-
-    @ViewBuilder
-    private func shapeRow<S: Identifiable & Equatable>(
-        title: String,
-        items: [S],
-        selection: Binding<S>,
-        @ViewBuilder swatch: @escaping (S, Color) -> some View
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            HStack(spacing: 12) {
-                ForEach(items) { item in
-                    let isSelected = selection.wrappedValue == item
-                    Button {
-                        selection.wrappedValue = item
-                    } label: {
-                        swatch(item, isSelected ? Color.accentColor : Color.primary.opacity(0.7))
-                            .frame(width: 44, height: 44)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color(.secondarySystemGroupedBackground))
-                                    .strokeBorder(isSelected ? Color.accentColor : Color.primary.opacity(0.12), lineWidth: isSelected ? 2 : 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-        }
-        .padding(.vertical, 4)
-    }
 }
+
+// MARK: - Swatches
 
 /// Mini 3×3 grid of one module shape.
 struct ModuleSwatch: View {
