@@ -195,6 +195,16 @@ final class BuilderModel {
         }
     }
 
+    var frameLabelEdge: QRFrame.LabelEdge {
+        get { design.frame?.labelEdge ?? .bottom }
+        set { design.frame?.labelEdge = newValue }
+    }
+
+    var frameBadgeData: Data? {
+        get { design.frame?.badgeImageData }
+        set { design.frame?.badgeImageData = newValue }
+    }
+
     var hasCustomEyeColors: Bool {
         get { design.eyeColor != nil }
         set {

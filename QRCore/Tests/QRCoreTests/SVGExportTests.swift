@@ -42,8 +42,9 @@ struct SVGExportTests {
         var design = QRDesign()
         design.frame = QRFrame()
         let svg = try makeSVG(design: design)
-        let bgRect = try #require(svg.firstMatch(of: /<rect width="[0-9.]+" height="[0-9.]+"([^\/]*)\//))
-        #expect(bgRect.1.contains("rx="))
+        // The first white rect is the background; framed it must be rounded.
+        let bgRect = try #require(svg.firstMatch(of: /<rect [^>]*fill="#FFFFFF"[^>]*\/>/))
+        #expect(bgRect.0.contains("rx="))
     }
 
     @Test func circleLogoEmitsClipPathAndAspectFill() throws {
@@ -86,6 +87,17 @@ struct SVGExportTests {
             return try #require(Double(match.2))
         }
         #expect(try viewBoxHeight(framedSVG) > viewBoxHeight(plainSVG))
+    }
+
+    @Test func topLabelFrameWithBadgeEmitsKnockoutAndBadge() throws {
+        var design = QRDesign()
+        design.frame = QRFrame(text: "TAP OR SCAN", color: .black, labelEdge: .top, badgeImageData: Data([1, 2, 3]))
+        let svg = try makeSVG(design: design)
+        #expect(isWellFormedXML(svg))
+        #expect(svg.contains(">TAP OR SCAN</text>"))
+        #expect(!svg.contains("<path d=\"M0.5"))  // no banner path for top labels
+        #expect(svg.contains("badgeclip"))
+        #expect(svg.contains("data:image/png;base64,\(Data([1, 2, 3]).base64EncodedString())"))
     }
 
     @Test func frameTextIsXMLEscaped() throws {

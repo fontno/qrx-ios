@@ -16,6 +16,11 @@ struct LibraryView: View {
     @State private var renameText = ""
     @State private var presentTarget: SavedCode?
     @State private var showingScanner = false
+    @State private var showingTemplates = false
+    @State private var chosenTemplate: QRTemplate?
+    @State private var choseBlank = false
+    @State private var pendingTemplate: QRTemplate?
+    @State private var pendingBlank = false
 
     private var viewMode: LibraryViewMode {
         LibraryViewMode(rawValue: viewModeRaw) ?? .list
@@ -55,8 +60,8 @@ struct LibraryView: View {
                         Label("Scan", systemImage: "qrcode.viewfinder")
                     }
                     .accessibilityIdentifier("library.scan")
-                    NavigationLink {
-                        BuilderView()
+                    Button {
+                        showingTemplates = true
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -69,6 +74,31 @@ struct LibraryView: View {
             .sheet(isPresented: $showingScanner) {
                 ScannerView()
                     .tint(.primary)
+            }
+            .sheet(isPresented: $showingTemplates, onDismiss: {
+                // Navigate only after the sheet is fully gone, or the push
+                // gets dropped mid-dismissal.
+                if let template = chosenTemplate {
+                    chosenTemplate = nil
+                    pendingTemplate = template
+                } else if choseBlank {
+                    choseBlank = false
+                    pendingBlank = true
+                }
+            }) {
+                TemplateChooserView { template in
+                    if let template {
+                        chosenTemplate = template
+                    } else {
+                        choseBlank = true
+                    }
+                }
+            }
+            .navigationDestination(item: $pendingTemplate) { template in
+                BuilderView(template: template)
+            }
+            .navigationDestination(isPresented: $pendingBlank) {
+                BuilderView()
             }
             .onOpenURL { url in
                 guard url.scheme == "qrx" else { return }

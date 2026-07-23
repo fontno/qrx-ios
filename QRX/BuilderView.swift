@@ -34,6 +34,14 @@ struct BuilderView: View {
         _model = State(initialValue: model)
     }
 
+    init(template: QRTemplate) {
+        self.existing = nil
+        let model = BuilderModel()
+        model.contentType = ContentType(rawValue: template.contentTypeRaw) ?? .url
+        model.design = template.design
+        _model = State(initialValue: model)
+    }
+
     private struct RenderKey: Equatable {
         let payload: String
         let design: QRDesign

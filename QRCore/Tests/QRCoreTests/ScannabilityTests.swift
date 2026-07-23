@@ -94,6 +94,47 @@ struct ScannabilityTests {
         try expectScans(design)
     }
 
+    @Test func topLabelFrameWithBadgeScans() throws {
+        let badge = try #require(MonogramFactory.image(
+            text: "G", textColor: .white, backgroundColor: RGBAColor(red: 0.26, green: 0.52, blue: 0.96)))
+        var design = QRDesign(moduleShape: .rounded, eyeShape: .rounded)
+        design.frame = QRFrame(
+            text: "TAP OR SCAN",
+            color: RGBAColor(red: 0.1, green: 0.35, blue: 0.7),
+            labelEdge: .top,
+            badgeImageData: badge
+        )
+        try expectScans(design)
+    }
+
+    @Test func legacyFrameJSONStillDecodes() throws {
+        // Designs saved before labelEdge/badge existed must keep loading.
+        let legacy = #"{"text":"SCAN ME","color":{"red":0,"green":0,"blue":0,"alpha":1}}"#
+        let frame = try JSONDecoder().decode(QRFrame.self, from: Data(legacy.utf8))
+        #expect(frame.labelEdge == .bottom)
+        #expect(frame.badgeImageData == nil)
+    }
+
+    @Test func classicBannerGeometryUnchangedByFrameV2() throws {
+        // The v2 metrics must reproduce the original banner frame exactly.
+        let old = FrameMetrics(layoutTotal: 29, hasFrame: true)
+        let new = FrameMetrics(layoutTotal: 29, frame: QRFrame())
+        #expect(old.canvasSize == new.canvasSize)
+        #expect(old.borderRect == new.borderRect)
+        #expect(old.bannerRect == new.bannerRect)
+        #expect(old.codeOrigin == new.codeOrigin)
+    }
+
+    @Test func badgeStaysInsideCanvas() {
+        let metrics = FrameMetrics(layoutTotal: 29, frame: QRFrame(labelEdge: .top, badgeImageData: Data([1])))
+        let badge = metrics.badgeRect!
+        #expect(badge.maxY <= metrics.canvasSize.height)
+        #expect(badge.minY >= 0)
+        let label = metrics.topLabelCenterY!
+        #expect(label - FrameMetrics.topLabelHeight / 2 >= 0)
+        #expect(label + FrameMetrics.topLabelHeight / 2 <= metrics.codeOrigin.y)
+    }
+
     @Test func everythingAtOnceScans() throws {
         let logoData = try #require(MonogramFactory.image(text: "B", textColor: .white, backgroundColor: .black))
         var design = QRDesign(

@@ -79,6 +79,23 @@ final class QRXUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Monogram"].waitForExistence(timeout: 5))
     }
 
+    func testTemplateGalleryOpensReviewTemplate() {
+        let app = launchApp()
+
+        app.buttons["library.add"].tap()
+        XCTAssertTrue(app.buttons["template.blank"].waitForExistence(timeout: 5))
+        let review = app.buttons["template.review"]
+        XCTAssertTrue(review.waitForExistence(timeout: 5))
+        review.tap()
+
+        // Template lands in the builder with its frame preconfigured.
+        XCTAssertTrue(app.buttons["builder.save"].waitForExistence(timeout: 10))
+        app.buttons["builder.section.Frame"].tap()
+        let frameToggle = app.switches["“Scan me” frame"].firstMatch
+        XCTAssertTrue(frameToggle.waitForExistence(timeout: 5))
+        XCTAssertEqual(frameToggle.value as? String, "1")
+    }
+
     func testScannerFlagsSuspiciousLinkAndSavesToLibrary() {
         let app = XCUIApplication()
         app.launchArguments = ["--uitest-inmemory", "--uitest-scan=https://apple.com@evil.example/login"]
