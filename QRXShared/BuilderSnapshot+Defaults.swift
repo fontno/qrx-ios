@@ -3,7 +3,7 @@ import QRCore
 /// Factory used by the Share Extension, which builds SavedCode records
 /// without a BuilderModel. Raw values must match the app's ContentType /
 /// LogoSource / LogoBacking enums so the record opens cleanly in the builder.
-extension BuilderSnapshot {
+nonisolated extension BuilderSnapshot {
     static func url(_ urlString: String) -> BuilderSnapshot {
         base(contentType: "URL", urlString: urlString)
     }

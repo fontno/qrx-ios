@@ -71,12 +71,20 @@ struct LibraryView: View {
                     .tint(.primary)
             }
             .onOpenURL { url in
-                // qrx://present/<uuid> — from widget taps.
-                guard url.scheme == "qrx", url.host() == "present",
-                      let id = UUID(uuidString: url.lastPathComponent),
-                      let code = codes.first(where: { $0.id == id })
-                else { return }
-                presentTarget = code
+                guard url.scheme == "qrx" else { return }
+                switch url.host() {
+                case "present":
+                    // qrx://present/<uuid> — widget taps and ShowCodeIntent.
+                    guard let id = UUID(uuidString: url.lastPathComponent),
+                          let code = codes.first(where: { $0.id == id })
+                    else { return }
+                    presentTarget = code
+                case "scan":
+                    // qrx://scan — the Control Center button.
+                    showingScanner = true
+                default:
+                    break
+                }
             }
             .alert("Rename Code", isPresented: Binding(
                 get: { renameTarget != nil },

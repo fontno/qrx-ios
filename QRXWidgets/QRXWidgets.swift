@@ -4,58 +4,7 @@ import SwiftData
 import SwiftUI
 import WidgetKit
 
-// MARK: - Data access
-
-/// Read-only access to the shared store from the widget process.
-enum WidgetStore {
-    static func fetchCodes() -> [SavedCode] {
-        guard let container = try? SharedStore.makeContainer() else { return [] }
-        let context = ModelContext(container)
-        let descriptor = FetchDescriptor<SavedCode>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
-        let codes = (try? context.fetch(descriptor)) ?? []
-        // Pinned first, then most recently updated.
-        return codes.sorted { ($0.pinned ? 0 : 1, $1.updatedAt) < ($1.pinned ? 0 : 1, $0.updatedAt) }
-    }
-
-    static func code(id: UUID?) -> SavedCode? {
-        let codes = fetchCodes()
-        guard let id else { return codes.first }
-        return codes.first { $0.id == id } ?? codes.first
-    }
-}
-
 // MARK: - Configuration intent
-
-struct CodeEntity: AppEntity {
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Saved Code"
-    static let defaultQuery = CodeQuery()
-
-    let id: UUID
-    let name: String
-
-    var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(name)")
-    }
-
-    init(code: SavedCode) {
-        self.id = code.id
-        self.name = code.name
-    }
-}
-
-struct CodeQuery: EntityQuery {
-    func entities(for identifiers: [UUID]) async throws -> [CodeEntity] {
-        WidgetStore.fetchCodes().filter { identifiers.contains($0.id) }.map(CodeEntity.init)
-    }
-
-    func suggestedEntities() async throws -> [CodeEntity] {
-        WidgetStore.fetchCodes().map(CodeEntity.init)
-    }
-
-    func defaultResult() async -> CodeEntity? {
-        WidgetStore.fetchCodes().first.map(CodeEntity.init)
-    }
-}
 
 struct SelectCodeIntent: WidgetConfigurationIntent {
     static let title: LocalizedStringResource = "Select Code"
@@ -91,7 +40,7 @@ struct CodeProvider: AppIntentTimelineProvider {
     }
 
     private func entry(for configuration: SelectCodeIntent) -> CodeEntry? {
-        guard let code = WidgetStore.code(id: configuration.code?.id),
+        guard let code = CodeFetch.code(id: configuration.code?.id),
               let design = code.design,
               !code.payload.isEmpty
         else { return nil }
@@ -201,9 +150,35 @@ struct PinnedCodeWidget: Widget {
     }
 }
 
+// MARK: - Control Center
+
+/// One-tap scanner launch from Control Center / the Lock Screen.
+struct OpenScannerIntent: AppIntent {
+    static let title: LocalizedStringResource = "Scan QR Code"
+    static let description = IntentDescription("Opens the QRX scanner.")
+    static let openAppWhenRun = true
+
+    func perform() async throws -> some IntentResult & OpensIntent {
+        .result(opensIntent: OpenURLIntent(URL(string: "qrx://scan")!))
+    }
+}
+
+struct ScanControl: ControlWidget {
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: "ScanControl") {
+            ControlWidgetButton(action: OpenScannerIntent()) {
+                Label("Scan QR Code", systemImage: "qrcode.viewfinder")
+            }
+        }
+        .displayName("Scan QR Code")
+        .description("Scan a QR code with QRX.")
+    }
+}
+
 @main
 struct QRXWidgetsBundle: WidgetBundle {
     var body: some Widget {
         PinnedCodeWidget()
+        ScanControl()
     }
 }

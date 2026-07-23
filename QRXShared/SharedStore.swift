@@ -3,7 +3,7 @@ import SwiftData
 
 /// The SwiftData store lives in the App Group container so the widget
 /// extension can read saved codes. Both the app and QRXWidgets use this.
-enum SharedStore {
+nonisolated enum SharedStore {
     static let appGroupID = "group.com.brianf.QRX"
     static let cloudKitContainerID = "iCloud.com.brianf.QRX"
 

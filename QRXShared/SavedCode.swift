@@ -32,7 +32,7 @@ final class SavedCode {
 
 /// Everything needed to restore the builder form exactly as the user left it
 /// (including inputs not baked into the design, like monogram initials).
-struct BuilderSnapshot: Codable {
+nonisolated struct BuilderSnapshot: Codable {
     var contentType: String
     var urlString: String
     var text: String
