@@ -102,9 +102,23 @@ struct FrameSectionView: View {
         Section {
             Toggle("\u{201C}Scan me\u{201D} frame", isOn: $model.hasFrame)
             if model.hasFrame {
+                Picker("Style", selection: $model.frameLabelEdge) {
+                    Text("Banner").tag(QRFrame.LabelEdge.bottom)
+                    Text("Top label").tag(QRFrame.LabelEdge.top)
+                }
+                .pickerStyle(.segmented)
                 TextField("Label", text: frameTextBinding)
                     .textInputAutocapitalization(.characters)
                 ColorPicker("Frame color", selection: Binding(rgba: frameColorBinding), supportsOpacity: false)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Badge")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    BrandPickerRow(includeNone: true) { brand in
+                        model.frameBadgeData = brand?.pngData()
+                    }
+                }
+                .padding(.vertical, 4)
             }
         }
     }
@@ -152,6 +166,18 @@ struct LogoSectionView: View {
                         }
                     }
                 }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Or pick a brand")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    BrandPickerRow(includeNone: false) { brand in
+                        if let data = brand?.pngData() {
+                            model.photoLogoData = data
+                            model.syncLogo()
+                        }
+                    }
+                }
+                .padding(.vertical, 4)
             case .monogram:
                 TextField("Initials (1–2 letters)", text: $model.monogramText)
                     .textInputAutocapitalization(.characters)

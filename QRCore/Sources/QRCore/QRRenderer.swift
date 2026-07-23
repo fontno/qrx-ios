@@ -6,7 +6,7 @@ public enum QRRenderer {
     /// frame banner is present).
     public static func render(matrix: QRMatrix, design: QRDesign, pixelSize: CGFloat) -> UIImage {
         let layout = QRLayout(matrix: matrix, design: design)
-        let metrics = FrameMetrics(layoutTotal: layout.total, hasFrame: design.frame != nil)
+        let metrics = FrameMetrics(layoutTotal: layout.total, frame: design.frame)
         let scale = pixelSize / metrics.canvasSize.width
         let imageSize = CGSize(width: pixelSize, height: pixelSize * metrics.canvasSize.height / metrics.canvasSize.width)
         let format = UIGraphicsImageRendererFormat()
@@ -20,15 +20,16 @@ public enum QRRenderer {
 
             if design.background.alpha > 0 {
                 ctx.setFillColor(design.background.cgColor)
-                let canvas = CGRect(origin: .zero, size: metrics.canvasSize)
-                if design.frame != nil {
-                    // Round the background to the frame border's outer edge so
-                    // no square corners poke out past the rounded frame.
+                if let borderRect = metrics.borderRect {
+                    // Fill only the bordered region, rounded to the border's
+                    // outer edge — no square corners past the rounded frame,
+                    // and no fill above a top label or below a badge.
                     let r = FrameMetrics.cornerRadius + FrameMetrics.strokeWidth / 2
-                    ctx.addPath(CGPath(roundedRect: canvas, cornerWidth: r, cornerHeight: r, transform: nil))
+                    let bg = borderRect.insetBy(dx: -FrameMetrics.strokeWidth / 2, dy: -FrameMetrics.strokeWidth / 2)
+                    ctx.addPath(CGPath(roundedRect: bg, cornerWidth: r, cornerHeight: r, transform: nil))
                     ctx.fillPath()
                 } else {
-                    ctx.fill(canvas)
+                    ctx.fill(CGRect(origin: .zero, size: metrics.canvasSize))
                 }
             }
 
@@ -87,37 +88,78 @@ public enum QRRenderer {
             ctx.restoreGState()
 
             if let frame = design.frame {
-                drawFrame(frame, metrics: metrics, ctx: ctx)
+                drawFrame(frame, metrics: metrics, background: design.background, ctx: ctx)
             }
         }
     }
 
-    private static func drawFrame(_ frame: QRFrame, metrics: FrameMetrics, ctx: CGContext) {
-        guard let borderRect = metrics.borderRect, let bannerRect = metrics.bannerRect else { return }
+    private static func drawFrame(_ frame: QRFrame, metrics: FrameMetrics, background: RGBAColor, ctx: CGContext) {
+        guard let borderRect = metrics.borderRect else { return }
         let r = FrameMetrics.cornerRadius
+        let text = frame.text.isEmpty ? "SCAN ME" : frame.text
 
-        ctx.setFillColor(frame.color.cgColor)
-        ctx.addPath(QRGeometry.roundedRectPath(bannerRect, tl: 0, tr: 0, br: r, bl: r))
-        ctx.fillPath()
+        if let bannerRect = metrics.bannerRect {
+            ctx.setFillColor(frame.color.cgColor)
+            ctx.addPath(QRGeometry.roundedRectPath(bannerRect, tl: 0, tr: 0, br: r, bl: r))
+            ctx.fillPath()
+        }
 
         ctx.setStrokeColor(frame.color.cgColor)
         ctx.setLineWidth(FrameMetrics.strokeWidth)
         ctx.addPath(CGPath(roundedRect: borderRect, cornerWidth: r, cornerHeight: r, transform: nil))
         ctx.strokePath()
 
-        let text = frame.text.isEmpty ? "SCAN ME" : frame.text
-        var font = UIFont.systemFont(ofSize: FrameMetrics.fontSize, weight: .heavy)
+        if let bannerRect = metrics.bannerRect {
+            let attributes = labelAttributes(size: FrameMetrics.fontSize, color: frame.textColor)
+            let textSize = (text as NSString).size(withAttributes: attributes)
+            let origin = CGPoint(x: bannerRect.midX - textSize.width / 2, y: bannerRect.midY - textSize.height / 2)
+            (text as NSString).draw(at: origin, withAttributes: attributes)
+        }
+
+        if let centerY = metrics.topLabelCenterY {
+            // Knockout label breaking the top border line, text in frame color.
+            let attributes = labelAttributes(size: FrameMetrics.topLabelFontSize, color: frame.color)
+            let textSize = (text as NSString).size(withAttributes: attributes)
+            let knockout = CGRect(
+                x: metrics.canvasSize.width / 2 - textSize.width / 2 - 1,
+                y: centerY - FrameMetrics.topLabelHeight / 2,
+                width: textSize.width + 2,
+                height: FrameMetrics.topLabelHeight
+            )
+            let knockoutColor = background.alpha > 0 ? background : .white
+            ctx.setFillColor(knockoutColor.cgColor)
+            ctx.fill(knockout)
+            let origin = CGPoint(x: metrics.canvasSize.width / 2 - textSize.width / 2, y: centerY - textSize.height / 2)
+            (text as NSString).draw(at: origin, withAttributes: attributes)
+        }
+
+        if let badgeRect = metrics.badgeRect,
+           let badgeData = frame.badgeImageData,
+           let badge = UIImage(data: badgeData) {
+            ctx.setFillColor(RGBAColor.white.cgColor)
+            ctx.fillEllipse(in: badgeRect)
+            ctx.saveGState()
+            let clipRect = badgeRect.insetBy(dx: 0.2, dy: 0.2)
+            ctx.addEllipse(in: clipRect)
+            ctx.clip()
+            badge.draw(in: aspectFill(badge.size, in: clipRect))
+            ctx.restoreGState()
+            ctx.setStrokeColor(frame.color.cgColor)
+            ctx.setLineWidth(FrameMetrics.strokeWidth * 0.8)
+            ctx.strokeEllipse(in: badgeRect)
+        }
+    }
+
+    private static func labelAttributes(size: CGFloat, color: RGBAColor) -> [NSAttributedString.Key: Any] {
+        var font = UIFont.systemFont(ofSize: size, weight: .heavy)
         if let descriptor = font.fontDescriptor.withDesign(.rounded) {
             font = UIFont(descriptor: descriptor, size: font.pointSize)
         }
-        let attributes: [NSAttributedString.Key: Any] = [
+        return [
             .font: font,
-            .foregroundColor: UIColor(cgColor: frame.textColor.cgColor),
+            .foregroundColor: UIColor(cgColor: color.cgColor),
             .kern: 0.15,
         ]
-        let textSize = (text as NSString).size(withAttributes: attributes)
-        let origin = CGPoint(x: bannerRect.midX - textSize.width / 2, y: bannerRect.midY - textSize.height / 2)
-        (text as NSString).draw(at: origin, withAttributes: attributes)
     }
 
     private static func fill(_ path: CGPath, style: FillStyle, in fullRect: CGRect, ctx: CGContext, evenOdd: Bool) {

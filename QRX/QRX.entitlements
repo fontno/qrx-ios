@@ -2,16 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>aps-environment</key>
-	<string>development</string>
-	<key>com.apple.developer.icloud-container-identifiers</key>
-	<array>
-		<string>iCloud.com.brianf.QRX</string>
-	</array>
-	<key>com.apple.developer.icloud-services</key>
-	<array>
-		<string>CloudKit</string>
-	</array>
+	<!-- iCloud sync entitlements removed while developing on a free personal
+	     team (they can't be provisioned). Restore once the paid Apple
+	     Developer Program membership is active:
+	       aps-environment = development
+	       com.apple.developer.icloud-container-identifiers = [iCloud.com.brianf.QRX]
+	       com.apple.developer.icloud-services = [CloudKit]
+	     ...and flip QRXCloudSyncEnabled to true in Info.plist (it gates the
+	     CloudKit mirror, which hard-crashes rather than throwing when the
+	     entitlement is missing). -->
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.com.brianf.QRX</string>

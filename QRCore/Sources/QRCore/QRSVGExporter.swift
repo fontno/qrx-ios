@@ -7,17 +7,20 @@ public enum QRSVGExporter {
     public static func svg(matrix: QRMatrix, design: QRDesign) -> String {
         let layout = QRLayout(matrix: matrix, design: design)
         let total = layout.total
-        let metrics = FrameMetrics(layoutTotal: total, hasFrame: design.frame != nil)
+        let metrics = FrameMetrics(layoutTotal: total, frame: design.frame)
         var defs: [String] = []
         var body: [String] = []
 
         if design.background.alpha > 0 {
-            // With a frame, round the background to the border's outer edge so
-            // no square corners poke out past the rounded frame.
-            let rx = design.frame != nil
-                ? " rx=\"\(fmt(FrameMetrics.cornerRadius + FrameMetrics.strokeWidth / 2))\""
-                : ""
-            body.append("<rect width=\"\(fmt(metrics.canvasSize.width))\" height=\"\(fmt(metrics.canvasSize.height))\"\(rx) fill=\"\(design.background.svgHex)\"\(opacity(design.background))/>")
+            if let borderRect = metrics.borderRect {
+                // Fill only the bordered region, rounded to the border's outer
+                // edge — matches the raster renderer.
+                let bg = borderRect.insetBy(dx: -FrameMetrics.strokeWidth / 2, dy: -FrameMetrics.strokeWidth / 2)
+                let rx = FrameMetrics.cornerRadius + FrameMetrics.strokeWidth / 2
+                body.append("<rect x=\"\(fmt(bg.minX))\" y=\"\(fmt(bg.minY))\" width=\"\(fmt(bg.width))\" height=\"\(fmt(bg.height))\" rx=\"\(fmt(rx))\" fill=\"\(design.background.svgHex)\"\(opacity(design.background))/>")
+            } else {
+                body.append("<rect width=\"\(fmt(metrics.canvasSize.width))\" height=\"\(fmt(metrics.canvasSize.height))\" fill=\"\(design.background.svgHex)\"\(opacity(design.background))/>")
+            }
         }
 
         if design.frame != nil {
@@ -73,7 +76,7 @@ public enum QRSVGExporter {
 
         if let frame = design.frame {
             body.append("</g>")
-            appendFrame(frame, metrics: metrics, to: &body)
+            appendFrame(frame, metrics: metrics, background: design.background, defs: &defs, to: &body)
         }
 
         let defsBlock = defs.isEmpty ? "" : "<defs>\(defs.joined())</defs>"
@@ -84,17 +87,48 @@ public enum QRSVGExporter {
         """
     }
 
-    private static func appendFrame(_ frame: QRFrame, metrics: FrameMetrics, to body: inout [String]) {
-        guard let borderRect = metrics.borderRect, let bannerRect = metrics.bannerRect else { return }
+    private static func appendFrame(_ frame: QRFrame, metrics: FrameMetrics, background: RGBAColor, defs: inout [String], to body: inout [String]) {
+        guard let borderRect = metrics.borderRect else { return }
         let r = FrameMetrics.cornerRadius
-        body.append("<path d=\"\(roundedRectData(bannerRect, tl: 0, tr: 0, br: r, bl: r))\" fill=\"\(frame.color.svgHex)\"/>")
-        body.append("<rect x=\"\(fmt(borderRect.minX))\" y=\"\(fmt(borderRect.minY))\" width=\"\(fmt(borderRect.width))\" height=\"\(fmt(borderRect.height))\" rx=\"\(fmt(r))\" fill=\"none\" stroke=\"\(frame.color.svgHex)\" stroke-width=\"\(fmt(FrameMetrics.strokeWidth))\"/>")
         let text = frame.text.isEmpty ? "SCAN ME" : frame.text
         let escaped = text
             .replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
-        body.append("<text x=\"\(fmt(bannerRect.midX))\" y=\"\(fmt(bannerRect.midY))\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"bold\" font-size=\"\(fmt(FrameMetrics.fontSize))\" letter-spacing=\"0.15\" fill=\"\(frame.textColor.svgHex)\" text-anchor=\"middle\" dominant-baseline=\"central\">\(escaped)</text>")
+
+        if let bannerRect = metrics.bannerRect {
+            body.append("<path d=\"\(roundedRectData(bannerRect, tl: 0, tr: 0, br: r, bl: r))\" fill=\"\(frame.color.svgHex)\"/>")
+        }
+        body.append("<rect x=\"\(fmt(borderRect.minX))\" y=\"\(fmt(borderRect.minY))\" width=\"\(fmt(borderRect.width))\" height=\"\(fmt(borderRect.height))\" rx=\"\(fmt(r))\" fill=\"none\" stroke=\"\(frame.color.svgHex)\" stroke-width=\"\(fmt(FrameMetrics.strokeWidth))\"/>")
+
+        if let bannerRect = metrics.bannerRect {
+            body.append("<text x=\"\(fmt(bannerRect.midX))\" y=\"\(fmt(bannerRect.midY))\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"bold\" font-size=\"\(fmt(FrameMetrics.fontSize))\" letter-spacing=\"0.15\" fill=\"\(frame.textColor.svgHex)\" text-anchor=\"middle\" dominant-baseline=\"central\">\(escaped)</text>")
+        }
+
+        if let centerY = metrics.topLabelCenterY {
+            // Estimated knockout width — SVG has no text measurement. Matches
+            // the raster look closely for typical short labels.
+            let estimatedWidth = CGFloat(text.count) * FrameMetrics.topLabelFontSize * 0.68 + 2
+            let knockoutColor = background.alpha > 0 ? background : .white
+            let knockout = CGRect(
+                x: metrics.canvasSize.width / 2 - estimatedWidth / 2,
+                y: centerY - FrameMetrics.topLabelHeight / 2,
+                width: estimatedWidth,
+                height: FrameMetrics.topLabelHeight
+            )
+            body.append("<rect x=\"\(fmt(knockout.minX))\" y=\"\(fmt(knockout.minY))\" width=\"\(fmt(knockout.width))\" height=\"\(fmt(knockout.height))\" fill=\"\(knockoutColor.svgHex)\"/>")
+            body.append("<text x=\"\(fmt(metrics.canvasSize.width / 2))\" y=\"\(fmt(centerY))\" font-family=\"Helvetica, Arial, sans-serif\" font-weight=\"bold\" font-size=\"\(fmt(FrameMetrics.topLabelFontSize))\" letter-spacing=\"0.15\" fill=\"\(frame.color.svgHex)\" text-anchor=\"middle\" dominant-baseline=\"central\">\(escaped)</text>")
+        }
+
+        if let badgeRect = metrics.badgeRect, let badgeData = frame.badgeImageData {
+            let cx = badgeRect.midX, cy = badgeRect.midY
+            body.append("<circle cx=\"\(fmt(cx))\" cy=\"\(fmt(cy))\" r=\"\(fmt(badgeRect.width / 2))\" fill=\"#FFFFFF\"/>")
+            let clipR = badgeRect.width / 2 - 0.2
+            defs.append("<clipPath id=\"badgeclip\"><circle cx=\"\(fmt(cx))\" cy=\"\(fmt(cy))\" r=\"\(fmt(clipR))\"/></clipPath>")
+            let clipRect = badgeRect.insetBy(dx: 0.2, dy: 0.2)
+            body.append("<image href=\"data:image/png;base64,\(badgeData.base64EncodedString())\" x=\"\(fmt(clipRect.minX))\" y=\"\(fmt(clipRect.minY))\" width=\"\(fmt(clipRect.width))\" height=\"\(fmt(clipRect.height))\" preserveAspectRatio=\"xMidYMid slice\" clip-path=\"url(#badgeclip)\"/>")
+            body.append("<circle cx=\"\(fmt(cx))\" cy=\"\(fmt(cy))\" r=\"\(fmt(badgeRect.width / 2))\" fill=\"none\" stroke=\"\(frame.color.svgHex)\" stroke-width=\"\(fmt(FrameMetrics.strokeWidth * 0.8))\"/>")
+        }
     }
 
     // MARK: - Fills
