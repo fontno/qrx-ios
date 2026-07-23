@@ -11,6 +11,9 @@ final class QRXUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--uitest-inmemory"]
         app.launch()
+        // Let the first screen settle before tests start tapping — launches
+        // mid-suite on a warm simulator occasionally swallow the first tap.
+        _ = app.navigationBars.firstMatch.waitForExistence(timeout: 10)
         return app
     }
 
@@ -74,6 +77,36 @@ final class QRXUITests: XCTestCase {
 
         app.buttons["builder.section.Logo"].tap()
         XCTAssertTrue(app.buttons["Monogram"].waitForExistence(timeout: 5))
+    }
+
+    func testScannerFlagsSuspiciousLinkAndSavesToLibrary() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--uitest-inmemory", "--uitest-scan=https://apple.com@evil.example/login"]
+        app.launch()
+
+        app.buttons["library.scan"].tap()
+
+        // The injected phishing-style URL must be flagged.
+        XCTAssertTrue(app.staticTexts["Suspicious link"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["scanner.open"].exists)
+
+        // Opening a flagged link requires explicit confirmation.
+        app.buttons["scanner.open"].tap()
+        XCTAssertTrue(app.buttons["Open Anyway"].waitForExistence(timeout: 5))
+        let cancel = app.descendants(matching: .button)
+            .matching(NSPredicate(format: "label == 'Cancel'")).firstMatch
+        if cancel.waitForExistence(timeout: 3) {
+            cancel.tap()
+        } else {
+            // Action sheets also dismiss by tapping outside.
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15)).tap()
+        }
+        XCTAssertTrue(app.buttons["scanner.save"].waitForExistence(timeout: 5))
+
+        // Save the scan into the library.
+        app.buttons["scanner.save"].tap()
+        app.buttons["scanner.close"].tap()
+        XCTAssertTrue(app.staticTexts["evil.example"].waitForExistence(timeout: 5))
     }
 
     func testLibraryTogglesBetweenListAndGrid() {

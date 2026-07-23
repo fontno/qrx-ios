@@ -15,6 +15,7 @@ struct LibraryView: View {
     @State private var renameTarget: SavedCode?
     @State private var renameText = ""
     @State private var presentTarget: SavedCode?
+    @State private var showingScanner = false
 
     private var viewMode: LibraryViewMode {
         LibraryViewMode(rawValue: viewModeRaw) ?? .list
@@ -47,7 +48,13 @@ struct LibraryView: View {
                         .accessibilityIdentifier("library.viewMode")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button {
+                        showingScanner = true
+                    } label: {
+                        Label("Scan", systemImage: "qrcode.viewfinder")
+                    }
+                    .accessibilityIdentifier("library.scan")
                     NavigationLink {
                         BuilderView()
                     } label: {
@@ -58,6 +65,10 @@ struct LibraryView: View {
             }
             .fullScreenCover(item: $presentTarget) { code in
                 PresentView(code: code)
+            }
+            .sheet(isPresented: $showingScanner) {
+                ScannerView()
+                    .tint(.primary)
             }
             .onOpenURL { url in
                 // qrx://present/<uuid> — from widget taps.
