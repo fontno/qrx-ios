@@ -78,8 +78,7 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
 
 | Deferred | Why | Target |
 |---|---|---|
-| Built-in scanner + malicious-URL warning | Separate surface | Phase 3c |
-| App Intents / Shortcuts, Wallet passes | After Share Extension | Phase 3c |
+| App Intents / Shortcuts, Wallet passes | Next native surface | Phase 3d |
 | PDF export, batch/CSV | Pro-tier features | Phase 4 |
 | Honest dynamic codes + analytics | Needs server; the one justifiable sub | Later |
 
