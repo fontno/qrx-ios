@@ -78,7 +78,7 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
 
 | Deferred | Why | Target |
 |---|---|---|
-| App Intents / Shortcuts, Wallet passes | Next native surface | Phase 3d |
+| Wallet passes | Wallet re-renders its own plain QR (no branding), and signing needs a server or an embedded extractable key — revisit when the dynamic-codes server exists | With dynamic codes |
 | PDF export, batch/CSV | Pro-tier features | Phase 4 |
 | Honest dynamic codes + analytics | Needs server; the one justifiable sub | Later |
 
