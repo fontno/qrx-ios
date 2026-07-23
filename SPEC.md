@@ -74,6 +74,11 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
   raw-IP hosts, http, link shorteners, odd ports — plain-language warnings,
   explicit confirm to open flagged links, save-scan-to-library
 
+**Shortcuts & Control Center (Phase 3d — done)**
+- "Make QR Code" intent (background, PNG out, optional save) + "Show Saved QR
+  Code" intent (entity picker → Present mode); App Shortcuts for Siri/Spotlight
+- Control Center / Lock Screen control that jumps straight into the scanner
+
 ### ❌ Out (explicitly deferred)
 
 | Deferred | Why | Target |
