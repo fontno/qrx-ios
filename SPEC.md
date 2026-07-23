@@ -66,11 +66,18 @@ Small brands, creators, and small businesses burned by web generators: trial-to-
 - Library list/grid toggle (persisted); builder: single Share menu (PNG/SVG),
   Duplicate on saved codes, tap preview for full-screen
 
+**iCloud sync + scanner (Phase 3c — done)**
+- SwiftData CloudKit mirroring of the library (app-only; extensions share the
+  store but never run a second mirror); local-first with no iCloud account
+- Camera scanner (VisionKit) with **offline** malicious-URL heuristics —
+  javascript:/data: schemes, credential-@ decoys, punycode/homograph hosts,
+  raw-IP hosts, http, link shorteners, odd ports — plain-language warnings,
+  explicit confirm to open flagged links, save-scan-to-library
+
 ### ❌ Out (explicitly deferred)
 
 | Deferred | Why | Target |
 |---|---|---|
-| iCloud sync of library (CloudKit) | Schema is CloudKit-ready (inline defaults); needs entitlements + signing pass | Phase 3c |
 | Built-in scanner + malicious-URL warning | Separate surface | Phase 3c |
 | App Intents / Shortcuts, Wallet passes | After Share Extension | Phase 3c |
 | PDF export, batch/CSV | Pro-tier features | Phase 4 |
