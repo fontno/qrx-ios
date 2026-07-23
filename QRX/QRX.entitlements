@@ -8,8 +8,9 @@
 	       aps-environment = development
 	       com.apple.developer.icloud-container-identifiers = [iCloud.com.brianf.QRX]
 	       com.apple.developer.icloud-services = [CloudKit]
-	     The app already degrades gracefully: it opens the same store without
-	     CloudKit mirroring when these are absent. -->
+	     ...and flip QRXCloudSyncEnabled to true in Info.plist (it gates the
+	     CloudKit mirror, which hard-crashes rather than throwing when the
+	     entitlement is missing). -->
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.com.brianf.QRX</string>

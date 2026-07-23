@@ -10,11 +10,18 @@ struct QRXApp: App {
         // deliberately have no in-memory fallback — silently opening a
         // throwaway store would look like data loss to the user.
         let inMemory = CommandLine.arguments.contains("--uitest-inmemory")
+        // CloudKit ASSERTS (not throws) when the entitlement is missing, so
+        // sync must be gated up front: QRXCloudSyncEnabled mirrors whether the
+        // iCloud entitlements are present in this build (stripped while on a
+        // free personal team), and ubiquityIdentityToken confirms a signed-in
+        // iCloud account.
+        let entitled = (Bundle.main.object(forInfoDictionaryKey: "QRXCloudSyncEnabled") as? Bool) ?? false
+        let syncAvailable = entitled && FileManager.default.ubiquityIdentityToken != nil
         do {
             containerResult = .success(try SharedStore.makeContainer(
                 inMemory: inMemory,
                 migrateLegacyStore: true,
-                syncEnabled: !inMemory
+                syncEnabled: !inMemory && syncAvailable
             ))
         } catch {
             // CloudKit mirroring can be unavailable (missing entitlement on a
